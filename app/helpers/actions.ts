@@ -22,7 +22,7 @@ const FormSchema = z.object({
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ date: true });
-
+//crear factura
 export const createInvoice = async (prevState: CreateFormState, formData: FormData) => {
   const session = await auth();
   const validatedFields = CreateInvoice.safeParse({
@@ -63,7 +63,7 @@ export const createInvoice = async (prevState: CreateFormState, formData: FormDa
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 };
-
+//Actualizar factura
 export const updateInvoice = async (prevState: CreateFormState, formData: FormData) => {
   const session = await auth();
   const validatedFields = UpdateInvoice.safeParse({
