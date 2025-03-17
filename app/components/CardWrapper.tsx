@@ -1,18 +1,27 @@
-import { InfoCard } from "anjrot-components";
+// app/components/CardWrapper.tsx
+import { fetchCardData } from "@/app/helpers/api";
 import React from "react";
-import { fetchCardData } from "../helpers/api";
+import StatsCards from "./StatsCards";
 
 const CardWrapper = async () => {
-    const { numberOfCustomers, numberOfInvoices, totalPaidInvoices, totalPendingInvoices } = await fetchCardData();
-  
+  try {
+    const { totalPacientes, totalConsultas, pacientesPendientes, pacientesAtendidos, consultasUrgentes } = await fetchCardData();
+
     return (
-      <>
-        <InfoCard title="Collected" value={totalPaidInvoices} type="collected" currency={{ locale: "en-US", currency: "USD" }} />
-        <InfoCard title="Pending" value={totalPendingInvoices} type="pending" currency={{ locale: "en-US", currency: "USD" }} />
-        <InfoCard title="Total Invoices" value={numberOfInvoices} type="invoices" />
-        <InfoCard title="Total Customers" value={numberOfCustomers} type="customers" />
-      </>
+      <StatsCards
+        totalPacientes={totalPacientes}
+        totalConsultas={totalConsultas}
+        pacientesPendientes={pacientesPendientes}
+        pacientesAtendidos={pacientesAtendidos}
+        pacientesDerivados={""}
+        consultasUrgentes={consultasUrgentes}
+        className="p-4"
+      />
     );
-  };
-  
-  export default CardWrapper;
+  } catch (error) {
+    console.error("Error in CardWrapper:", error);
+    return <div>No se pudieron cargar las estadísticas del dashboard.</div>;
+  }
+};
+
+export default CardWrapper;

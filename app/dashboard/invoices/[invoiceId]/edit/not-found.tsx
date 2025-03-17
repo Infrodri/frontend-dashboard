@@ -5,7 +5,7 @@ const NotFound = () => {
   return (
     <main className="flex h-screen flex-col items-center justify-center gap-2">
       <FaRegFaceFrownOpen className="w-20 text-gray-400 text-6xl" />
-      <h2 className="font-semibold text-4xl">Could not find the requested invoice</h2>
+      <h2 className="font-semibold text-4xl">Could not find the requested invoice.</h2>
       <Link href="/dashboard/invoices" className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-2xl text-white transition-colors hover:bg-blue-400">
         Go Back
       </Link>

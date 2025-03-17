@@ -20,106 +20,106 @@ const FormSchema = z.object({
   date: z.string()
 });
 
-const CreateInvoice = FormSchema.omit({ id: true, date: true });
-const UpdateInvoice = FormSchema.omit({ date: true });
-//crear factura
-export const createInvoice = async (prevState: CreateFormState, formData: FormData) => {
-  const session = await auth();
-  const validatedFields = CreateInvoice.safeParse({
-    customerId: formData.get("customerId"),
-    amount: formData.get("amount"),
-    status: formData.get("status")
-  });
+// const CreateInvoice = FormSchema.omit({ id: true, date: true });
+// const UpdateInvoice = FormSchema.omit({ date: true });
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Invoice."
-    };
-  }
+// export const createInvoice = async (prevState: CreateFormState, formData: FormData) => {
+//   const session = await auth();
+//   const validatedFields = CreateInvoice.safeParse({
+//     customerId: formData.get("customerId"),
+//     amount: formData.get("amount"),
+//     status: formData.get("status")
+//   });
 
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split("T")[0];
+//   if (!validatedFields.success) {
+//     return {
+//       errors: validatedFields.error.flatten().fieldErrors,
+//       message: "Missing Fields. Failed to Create Invoice."
+//     };
+//   }
 
-  const body = {
-    status,
-    date,
-    amount: amountInCents,
-    customer: customerId
-  };
+//   const { customerId, amount, status } = validatedFields.data;
+//   const amountInCents = amount * 100;
+//   const date = new Date().toISOString().split("T")[0];
 
-  try {
-    await fetch(`${process.env.BACKEND_URL}/invoices`, {
-      headers: authHeaders(session?.user?.token),
-      method: "POST",
-      body: JSON.stringify(body)
-    });
-  } catch (error) {
-    return {
-      message: "Database Error: Failed to Create Invoice."
-    };
-  }
-  revalidatePath("/dashboard/invoices");
-  redirect("/dashboard/invoices");
-};
-//Actualizar factura
-export const updateInvoice = async (prevState: CreateFormState, formData: FormData) => {
-  const session = await auth();
-  const validatedFields = UpdateInvoice.safeParse({
-    id: formData.get("invoiceId"),
-    customerId: formData.get("customerId"),
-    amount: formData.get("amount"),
-    status: formData.get("status")
-  });
+//   const body = {
+//     status,
+//     date,
+//     amount: amountInCents,
+//     customer: customerId
+//   };
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Invoice."
-    };
-  }
+//   try {
+//     await fetch(`${process.env.BACKEND_URL}/invoices`, {
+//       headers: authHeaders(session?.user?.token),
+//       method: "POST",
+//       body: JSON.stringify(body)
+//     });
+//   } catch (error) {
+//     return {
+//       message: "Database Error: Failed to Create Invoice."
+//     };
+//   }
+//   revalidatePath("/dashboard/invoices");
+//   redirect("/dashboard/invoices");
+// };
 
-  const { customerId, amount, status, id } = validatedFields.data;
-  const amountInCents = amount * 100;
+// export const updateInvoice = async (prevState: CreateFormState, formData: FormData) => {
+//   const session = await auth();
+//   const validatedFields = UpdateInvoice.safeParse({
+//     id: formData.get("invoiceId"),
+//     customerId: formData.get("customerId"),
+//     amount: formData.get("amount"),
+//     status: formData.get("status")
+//   });
 
-  const body = {
-    status,
-    amount: amountInCents,
-    customer: customerId
-  };
+//   if (!validatedFields.success) {
+//     return {
+//       errors: validatedFields.error.flatten().fieldErrors,
+//       message: "Missing Fields. Failed to Update Invoice."
+//     };
+//   }
 
-  try {
-    await fetch(`${process.env.BACKEND_URL}/invoices/${id}`, {
-      headers: authHeaders(session?.user?.token),
-      method: "PUT",
-      body: JSON.stringify(body)
-    });
-  } catch (error) {
-    return {
-      message: "Database Error: Failed to Update Invoice."
-    };
-  }
-  revalidatePath("/dashboard/invoices");
-  redirect("/dashboard/invoices");
-};
+//   const { customerId, amount, status, id } = validatedFields.data;
+//   const amountInCents = amount * 100;
 
-export const deleteInvoice = async (formData: FormData) => {
-  const session = await auth();
-  const id = formData.get("invoiceId");
+//   const body = {
+//     status,
+//     amount: amountInCents,
+//     customer: customerId
+//   };
 
-  try {
-    await fetch(`${process.env.BACKEND_URL}/invoices/${id}`, {
-      headers: authHeaders(session?.user?.token),
-      method: "DELETE"
-    });
-    revalidatePath("/dashboard/invoices");
-  } catch (error) {
-    return {
-      message: "Database Error: Failed to Update Invoice."
-    };
-  }
-};
+//   try {
+//     await fetch(`${process.env.BACKEND_URL}/invoices/${id}`, {
+//       headers: authHeaders(session?.user?.token),
+//       method: "PUT",
+//       body: JSON.stringify(body)
+//     });
+//   } catch (error) {
+//     return {
+//       message: "Database Error: Failed to Update Invoice."
+//     };
+//   }
+//   revalidatePath("/dashboard/invoices");
+//   redirect("/dashboard/invoices");
+// };
+
+// export const deleteInvoice = async (formData: FormData) => {
+//   const session = await auth();
+//   const id = formData.get("invoiceId");
+
+//   try {
+//     await fetch(`${process.env.BACKEND_URL}/invoices/${id}`, {
+//       headers: authHeaders(session?.user?.token),
+//       method: "DELETE"
+//     });
+//     revalidatePath("/dashboard/invoices");
+//   } catch (error) {
+//     return {
+//       message: "Database Error: Failed to Update Invoice."
+//     };
+//   }
+// };
 
 export const authenticate = async (state: string | undefined, formData: FormData) => {
   try {

@@ -1,23 +1,15 @@
-"use client";
+// "use client";
 
-import { CreateForm, CreateFormState, CustomerField } from "anjrot-components";
-import { FC, useActionState } from "react";
-import { createInvoice } from "../helpers/actions";
-import Link from "next/link";
+// import { createInvoice } from "@/app/helpers/actions";
+// import { CreateForm, CreateFormState, CustomerField } from "anjrot-components";
+// import Link from "next/link";
+// import { FC, useActionState } from "react";
 
+// const FormWrapper: FC<{ customers: CustomerField[] }> = ({ customers }) => {
+//   const initialState: CreateFormState = { message: null, errors: {} };
+//   const [state, formAction] = useActionState(createInvoice, initialState);
 
-const FormWrapper: FC<{customers: CustomerField[]}> = ({customers }) => {
-    const initialState: CreateFormState = {message: null, errors: {}};
-  const [state, formAction] = useActionState(createInvoice, initialState);
+//   return <CreateForm customers={customers} action={formAction} state={state} AnchorElement={Link} />;
+// };
 
-  return  (
-    <CreateForm 
-    customers = {customers} 
-    action={formAction} 
-    state={state} 
-    AnchorElement={Link}
-    />
-    );
-};
-    
-export default FormWrapper;
+// export default FormWrapper;

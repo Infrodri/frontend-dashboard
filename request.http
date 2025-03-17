@@ -1,43 +1,86 @@
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/health HTTP/1.1
 
-### Revenues
+### Revenues/ingresos
+  # {
+  #   "_id": "672d3c8cebdf38b892073a4b",
+  #   "month": "Feb",
+  #   "revenue": "1800"
+  # },
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/revenues HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-### Invoices Count
+### Invoices Count/ cantidad ingresos
+
+# 174
+
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoices/count HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-### Invoices
+### Invoices/facturas
+  # {
+  #   "id": "672d3c81ac768d903af2721a",
+  #   "amount": 6149,
+  #   "email": "amanda.morris@example.com",
+  #   "image_url": "https://randomuser.me/api/portraits/med/women/86.jpg",
+  #   "name": "Amanda Morris"
+  # },
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoices HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
+### Invoices/ factura de un cliente
+# {
+#   "id": "672d3c81ac768d903af2721a",
+#   "customer_id": "672d3c6f3bfe9390161f1a78",
+#   "amount": 6149,
+#   "status": "paid"
+# }
+GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoice/672d3c81ac768d903af2721a HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-######
-### Invoices
-GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoice/6765bd4290a82bd45ae0b0bd HTTP/1.1
-Authorization: Bearer  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
-
-### Invoices paginate
+### Invoices paginate / facturas paginadas
+  # {
+  #   "_id": "67b7382761cc2632a9cfc342",
+  #   "amount": 9050,
+  #   "status": "pending",
+  #   "date": "2025-02-20T00:00:00.000Z",
+  #   "id": "67b7382761cc2632a9cfc342",
+  #   "name": "Liam Herrera",
+  #   "email": "liam.herrera@example.com",
+  #   "image_url": "https://randomuser.me/api/portraits/med/men/21.jpg"
+  # },
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoices/paginate HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-### Invoices invoice-total-pages
+### Invoices invoice-total-pages / total de paginas de facturas
+# 1
+
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoices/page-count?q=bra HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
 
-### Customers
+### Customers / clientes
+  # {
+  #   "_id": "672d3c6f3bfe9390161f1a66",
+  #   "name": "Liam Herrera",
+  #   "email": "liam.herrera@example.com",
+  #   "image_url": "https://randomuser.me/api/portraits/med/men/21.jpg"
+  # },
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/customer HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-### Customers Count
+### Customers Count /clientes total
+
+# 30
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/customer/count HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
-### Status Count
+### Status Count / estado de facturas
+# {
+#   "paid": 1470099,
+#   "pending": 23423958028
+# }
 GET https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/invoices/status-count HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTczOTgxMDEzOH0.n6rio3mIdgU0A7D5KyAmjcHw0dmDIATLgzMVVxJ44q0 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGVmNzAwMmYzNGFjMWVlY2UxNzc2ZCIsImVtYWlsIjoibmV4dFR1dG9yaWFsQHRlc3QuY29tIiwibmFtZSI6Im5leHRUdXRvcmlhbCIsImlhdCI6MTc0MjIzNjU2MX0.LNIvS2UHHUJnPlH5ibqOxFYJu7K0LtG0lwQGDRP_PxY
 
 ### Register
 POST https://backend-next-tutorial-fay6a.ondigitalocean.app/api/v1/auth/register HTTP/1.1
@@ -58,3 +101,9 @@ Content-Type: application/json
   "email": "nextTutorial@test.com",
   "password": "123456"
 }
+
+
+### Dashboard Stats
+GET http://localhost:4000/api/v1/dashboard/stats HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3YzA4MzgxOTdjN2VhYzQzYmEzNzM3ZiIsImVtYWlsIjoiYWRtaW5AdGVzdC5jb20iLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzQxNzQ1OTc1LCJleHAiOjE3NDIxMDU5NzV9.FpUvpUIKsZ0dYjlHmj9VPG0c6XFl_Ym33igdxSoxpMI
