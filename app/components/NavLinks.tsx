@@ -19,6 +19,11 @@ const links = [
     name: "Customers",
     href: "/dashboard/customers",
     icon: FaUsers
+  },
+  {
+    name: "Medicos",
+    href: "/dashboard/medicos",
+    icon: FaUsers
   }
 ];
 

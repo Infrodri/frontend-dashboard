@@ -62,6 +62,63 @@ const authHeaders = (token?: string) => ({
   ...(token ? { Authorization: `Bearer ${token}` } : {}),
 });
 
+//----------------------------------------------
+// Definir el tipo de datos de paginacion
+interface Especialidad {
+  _id: string;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Usuario {
+  _id: string;
+  name: string;
+  username: string;
+  email: string;
+  permissions: string[];
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Medico {
+  _id: string;
+  cedula: string;
+  primerNombre: string;
+  segundoNombre?: string;
+  primerApellido: string;
+  segundoApellido?: string;
+  fechaNacimiento?: string;
+  lugarNacimiento?: string;
+  nacionalidad?: string;
+  ciudadDondeVive?: string;
+  direccion?: string;
+  telefono?: string;
+  celular?: string;
+  genero?: string;
+  especialidades: Especialidad[];
+  usuario: Usuario;
+  estado: string;
+  estaActivo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MedicosResponse {
+  success?: boolean;
+  medicos: Medico[];
+  message: string;
+}
+
+interface MedicoResponse {
+  success?: boolean;
+  medico: Medico;
+  message: string;
+}
+//----------------------------------------------
 export const fetchCardData = async (): Promise<{
   totalPacientes: string;
   totalConsultas: string;
@@ -187,66 +244,59 @@ export const fetchMedicosList = async (): Promise<Invoice[]> => {
     throw new Error("No se pudieron obtener los médicos. Por favor, intenta de nuevo más tarde.");
   }
 };
-// export const fetchFilteredInvoices = async (query?: string, currentPage?: number) => {
-//   const session = await auth();
-//   try {
-//     const fetchFilteredInvoices = await fetch(`${process.env.BACKEND_URL}/invoices/paginate?q=${query}&page=${currentPage}`, {
-//       headers: authHeaders(session?.user?.token)
-//     });
-//     console.log("fetchFilteredInvoices :>> ", fetchFilteredInvoices.status);
-//     const resultfetchFilteredInvoices = await fetchFilteredInvoices.json();
+export const fetchFilteredMedicos = async (
+  query: string = "",
+  currentPage: number = 1
+): Promise<MedicosResponse> => {
+  const session = await auth();
+  const token = session?.user?.token;
 
-//     return resultfetchFilteredInvoices;
-//   } catch (error) {
-//     console.log("error :>> ", error);
-//     throw new Error("Failed to fetch resultfetchFilteredInvoices data.");
-//   }
-// };
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/medicos`,
+      {
+        headers: authHeaders(token),
+      }
+    );
 
-// export const fetchInvoicesPages = async (query: string) => {
-//   const session = await auth();
-//   try {
-//     const getInvoicesPages = await fetch(`${process.env.BACKEND_URL}/invoices/page-count?q=${query}`, {
-//       headers: authHeaders(session?.user?.token)
-//     });
-//     const resultGetInvoicesPages = await getInvoicesPages.json();
+    console.log("fetchFilteredMedicos status:>> ", response.status);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error response from fetchFilteredMedicos:", errorData);
+      throw new Error(errorData.message || "Failed to fetch medicos data.");
+    }
 
-//     return resultGetInvoicesPages;
-//   } catch (error) {
-//     console.log("error :>> ", error);
-//     throw new Error("Failed to fetch resultGetInvoicesPages data.");
-//   }
-// };
+    const result = await response.json() as MedicosResponse;
+    return result;
+  } catch (error) {
+    console.error("Error in fetchFilteredMedicos:", error);
+    throw new Error("No se pudieron obtener los datos de médicos. Por favor, intenta de nuevo más tarde.");
+  }
+};
 
-// export const fetchCustomers = async () => {
-//   const session = await auth();
-//   try {
-//     const getCustomers = await fetch(`${process.env.BACKEND_URL}/customer`, {
-//       headers: authHeaders(session?.user?.token)
-//     });
-//     const resultGetCustomers = await getCustomers.json();
+export const fetchMedicoById = async (id: string): Promise<MedicoResponse> => {
+  const session = await auth();
+  const token = session?.user?.token;
 
-//     return resultGetCustomers;
-//   } catch (error) {
-//     console.log("error :>> ", error);
-//     throw new Error("Failed to fetch customers data.");
-//   }
-// };
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/medicos/${id}`,
+      {
+        headers: authHeaders(token),
+      }
+    );
 
-// export const fetchInvoiceById = async (id: string) => {
-//   const session = await auth();
-//   try {
-//     const getInvoiceById = await fetch(`${process.env.BACKEND_URL}/invoice/${id}`, {
-//       headers: authHeaders(session?.user?.token)
-//     });
-//     console.log("getInvoiceById :>> ", getInvoiceById.status);
-//     if (getInvoiceById.status === 404) return null;
-//     if (getInvoiceById.status !== 200) throw new Error("Error fetching invoice!!!");
-//     const resultInvoiceById = await getInvoiceById.json();
+    console.log("fetchMedicoById status:>> ", response.status);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error response from fetchMedicoById:", errorData);
+      throw new Error(errorData.message || "Failed to fetch medico data.");
+    }
 
-//     return resultInvoiceById;
-//   } catch (error) {
-//     console.log("error :>> ", error);
-//     throw new Error("Failed to fetch resultInvoiceById data.");
-//   }
-// };
+    const result = await response.json() as MedicoResponse;
+    return result;
+  } catch (error) {
+    console.error("Error in fetchMedicoById:", error);
+    throw new Error("No se pudo obtener el médico. Por favor, intenta de nuevo más tarde.");
+  }
+};
