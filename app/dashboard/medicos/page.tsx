@@ -1,10 +1,11 @@
 // app/dashboard/medicos/page.tsx
-import { fetchFilteredMedicos } from "@/app/helpers/api";
 import { Suspense } from "react";
 import SearchBar from "@/app/components/SearchBar";
 import Pagination from "@/app/components/Pagination";
 import { bebas } from "@/app/ui/fonts";
 import MedicosTable from "@/app/components/MedicosTable";
+import { fetchFilteredMedicos } from "@/app/helpers/apimedicos";
+import Link from "next/link";
 
 interface MedicosPageProps {
   searchParams?: {
@@ -16,34 +17,27 @@ interface MedicosPageProps {
 const MedicosPage = async ({ searchParams }: MedicosPageProps) => {
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const ITEMS_PER_PAGE = 5; // Número de médicos por página
+  const ITEMS_PER_PAGE = 5;
 
-  // Obtener todos los médicos
-  const response = await fetchFilteredMedicos();
-  let medicos = response.medicos;
-
-  // Filtrar médicos según el query (búsqueda del lado del cliente)
-  if (query) {
-    const lowerQuery = query.toLowerCase();
-    medicos = medicos.filter((medico) =>
-      `${medico.primerNombre} ${medico.primerApellido}`.toLowerCase().includes(lowerQuery) ||
-      medico.especialidades.some((esp) => esp.nombre.toLowerCase().includes(lowerQuery))
-    );
-  }
-
-  // Calcular paginación del lado del cliente
-  const totalItems = medicos.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedMedicos = medicos.slice(startIndex, endIndex);
+  // Obtener médicos paginados y filtrados
+  const { medicos, pagination } = await fetchFilteredMedicos(currentPage, ITEMS_PER_PAGE, query);
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
-      {/* Título */}
-      <h1 className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-6`}>
-        Médicos
-      </h1>
+      {/* Título y botón para crear médico */}
+      <div className="flex justify-between items-center mb-6">
+        <h1
+          className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900`}
+        >
+          Médicos
+        </h1>
+        <Link
+          href="/dashboard/medicos/create"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Crear Médico
+        </Link>
+      </div>
 
       {/* Campo de búsqueda */}
       <div className="mb-6">
@@ -53,14 +47,20 @@ const MedicosPage = async ({ searchParams }: MedicosPageProps) => {
       {/* Tabla de médicos */}
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
         <Suspense fallback={<div className="text-gray-500">Cargando médicos...</div>}>
-          <MedicosTable medicos={paginatedMedicos} />
+          {medicos.length > 0 ? (
+            <MedicosTable medicos={medicos} />
+          ) : (
+            <p className="text-gray-500 text-center">No se encontraron médicos.</p>
+          )}
         </Suspense>
       </div>
 
       {/* Paginación */}
-      <div className="mt-6 flex justify-center">
-        <Pagination totalPages={totalPages} />
-      </div>
+      {pagination.totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination totalPages={pagination.totalPages} />
+        </div>
+      )}
     </main>
   );
 };

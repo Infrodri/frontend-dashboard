@@ -1,7 +1,7 @@
 // app/components/CardWrapper.tsx
-import { fetchCardData } from "@/app/helpers/api";
 import React from "react";
 import StatsCards from "./StatsCards";
+import { fetchCardData } from "@/app/helpers/api";
 
 const CardWrapper = async () => {
   try {

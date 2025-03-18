@@ -2,6 +2,7 @@ import { FC, PropsWithChildren } from "react";
 import "@/app/ui/globals.css";
 import { roboto } from "./ui/fonts";
 import { Metadata } from "next";
+import { SessionProvider } from "next-auth/react"; // Asegúrate de que esta importación esté presente
 
 export const metadata: Metadata = {
   title: {

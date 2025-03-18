@@ -1,135 +1,127 @@
-// app/dashboard/medicos/[id]/EditMedicoForm.tsx
+// app/dashboard/medicos/create/CreateMedicoForm.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Medico } from "@/app/types/medico";
+import { Session } from "next-auth";
+import { Especialidad, Usuario } from "@/app/types/medico";
 
-interface Usuario {
-  _id: string;
-  name: string;
-  email: string;
-  username?: string;
-  permissions?: string[];
-  roles: string[];
-  createdAt?: string;
-  updatedAt?: string;
+interface CreateMedicoFormProps {
+  session: Session | null;
+  users: Usuario[];
+  especialidades: Especialidad[];
 }
 
-interface EditMedicoFormProps {
-  medico: Medico;
-  token: string;
-}
-
-const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
+const CreateMedicoForm: React.FC<CreateMedicoFormProps> = ({ session, users, especialidades }) => {
   const router = useRouter();
+
+  // Añadir logs para depurar
+  console.log("CreateMedicoForm users:>> ", users);
+  console.log("CreateMedicoForm especialidades:>> ", especialidades);
+
   const [formData, setFormData] = useState({
-    _id: medico._id,
-    cedula: medico.cedula,
-    primerNombre: medico.primerNombre,
-    segundoNombre: medico.segundoNombre || "",
-    primerApellido: medico.primerApellido,
-    segundoApellido: medico.segundoApellido || "",
-    fechaNacimiento: medico.fechaNacimiento || "",
-    lugarNacimiento: medico.lugarNacimiento || "",
-    nacionalidad: medico.nacionalidad || "",
-    ciudadDondeVive: medico.ciudadDondeVive || "",
-    direccion: medico.direccion || "",
-    telefono: medico.telefono || "",
-    celular: medico.celular || "",
-    genero: medico.genero || "",
-    especialidades: medico.especialidades.map((esp) => esp._id), // Solo necesitamos los _id
-    usuario: medico.usuario._id, // Inicializamos con el _id del usuario actual
-    estaActivo: medico.estaActivo,
+    cedula: "",
+    primerNombre: "",
+    segundoNombre: "",
+    primerApellido: "",
+    segundoApellido: "",
+    fechaNacimiento: "",
+    lugarNacimiento: "",
+    nacionalidad: "",
+    ciudadDondeVive: "",
+    direccion: "",
+    telefono: "",
+    celular: "",
+    genero: "",
+    estaActivo: true,
+    especialidades: "",
+    usuario: "",
   });
-  const [users, setUsers] = useState<Usuario[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Fetch para obtener la lista de usuarios
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("No se pudo cargar la lista de usuarios.");
-        }
-
-        const data = await response.json();
-        setUsers(data.users || []);
-      } catch (err: any) {
-        setError(err.message || "Error al cargar los usuarios.");
-      }
-    };
-
-    fetchUsers();
-  }, [token]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "estaActivo" ? value === "true" : value, // Convertimos el valor de estaActivo a booleano
-    }));
-  };
+    if (!session) {
+      setError("No autenticado");
+      router.push("/auth/signin");
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session?.user?.token) {
+      setError("No autenticado");
+      return;
+    }
+    if (!formData.usuario) {
+      setError("Debe seleccionar un usuario.");
+      return;
+    }
+    if (!formData.especialidades) {
+      setError("Debe seleccionar una especialidad.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/medicos/${medico._id}`, {
-        method: "PUT",
+      const medicoData = {
+        cedula: formData.cedula,
+        primerNombre: formData.primerNombre,
+        segundoNombre: formData.segundoNombre,
+        primerApellido: formData.primerApellido,
+        segundoApellido: formData.segundoApellido,
+        fechaNacimiento: formData.fechaNacimiento,
+        lugarNacimiento: formData.lugarNacimiento,
+        nacionalidad: formData.nacionalidad,
+        ciudadDondeVive: formData.ciudadDondeVive,
+        direccion: formData.direccion,
+        telefono: formData.telefono,
+        celular: formData.celular,
+        genero: formData.genero,
+        estaActivo: formData.estaActivo,
+        especialidades: [formData.especialidades],
+        usuario: formData.usuario,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/medicos`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.user.token}`,
         },
-        body: JSON.stringify({
-          cedula: formData.cedula,
-          primerNombre: formData.primerNombre,
-          segundoNombre: formData.segundoNombre,
-          primerApellido: formData.primerApellido,
-          segundoApellido: formData.segundoApellido,
-          fechaNacimiento: formData.fechaNacimiento,
-          lugarNacimiento: formData.lugarNacimiento,
-          nacionalidad: formData.nacionalidad,
-          ciudadDondeVive: formData.ciudadDondeVive,
-          direccion: formData.direccion,
-          telefono: formData.telefono,
-          celular: formData.celular,
-          genero: formData.genero,
-          especialidades: formData.especialidades, // Ya es un array de _id
-          usuario: formData.usuario, // Enviamos el _id del usuario
-          estaActivo: formData.estaActivo,
-        }),
+        body: JSON.stringify(medicoData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar el médico.");
+        throw new Error(errorData.message || "Failed to create medico.");
       }
 
       const result = await response.json();
-      setSuccessMessage(result.message || "Médico actualizado con éxito");
+      setSuccessMessage(result.message || "Médico creado con éxito");
       setTimeout(() => {
         router.push("/dashboard/medicos");
         router.refresh();
       }, 1000);
     } catch (error: any) {
-      setError(error.message || "No se pudo actualizar el médico.");
+      setError(error.message || "No se pudo crear el médico.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  if (!session) return <div>Cargando...</div>;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -310,6 +302,21 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
         </select>
       </div>
       <div>
+        <label htmlFor="estaActivo" className="block text-sm font-medium text-gray-700">
+          Estado Activo
+        </label>
+        <select
+          id="estaActivo"
+          name="estaActivo"
+          value={formData.estaActivo ? "true" : "false"}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div>
         <label htmlFor="usuario" className="block text-sm font-medium text-gray-700">
           Usuario
         </label>
@@ -336,43 +343,29 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
         </select>
       </div>
       <div>
-        <label htmlFor="estaActivo" className="block text-sm font-medium text-gray-700">
-          Estado Activo
-        </label>
-        <select
-          id="estaActivo"
-          name="estaActivo"
-          value={formData.estaActivo ? "true" : "false"}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="true">Activo</option>
-          <option value="false">Inactivo</option>
-        </select>
-      </div>
-      <div>
         <label htmlFor="especialidades" className="block text-sm font-medium text-gray-700">
-          Especialidades
+          Especialidad
         </label>
         <select
           id="especialidades"
           name="especialidades"
-          value={formData.especialidades[0] || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setFormData((prev) => ({
-              ...prev,
-              especialidades: value ? [value] : [], // Solo permitimos una especialidad por ahora
-            }));
-          }}
+          value={formData.especialidades}
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          required
         >
           <option value="">Seleccione una especialidad</option>
-          {medico.especialidades.map((esp) => (
-            <option key={esp._id} value={esp._id}>
-              {esp.nombre}
+          {especialidades && especialidades.length > 0 ? (
+            especialidades.map((especialidad) => (
+              <option key={especialidad._id} value={especialidad._id}>
+                {especialidad.nombre}
+              </option>
+            ))
+          ) : (
+            <option value="" disabled>
+              No hay especialidades disponibles
             </option>
-          ))}
+          )}
         </select>
       </div>
       {error && <p className="text-red-500">{error}</p>}
@@ -385,7 +378,7 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
             isSubmitting ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {isSubmitting ? "Guardando..." : "Guardar"}
+          {isSubmitting ? "Creando..." : "Crear Médico"}
         </button>
         <button
           type="button"
@@ -399,4 +392,4 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
   );
 };
 
-export default EditMedicoForm;
+export default CreateMedicoForm;
