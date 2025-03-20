@@ -1,37 +1,14 @@
 // app/dashboard/medicos/[id]/page.tsx
-import { auth } from "@/auth";
-import { notFound } from "next/navigation";
+import Detail from "@/app/dashboard/medicos/[id]/detail/Detail";
 import { fetchMedicoById } from "@/app/helpers/apimedicos";
-import DetailMedico from "./detail/DetailMedico";
 
-const MedicoDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const { id } = await params;
+interface MedicoDetailPageProps {
+  params: { id: string };
+}
 
-  const session = await auth();
-  if (!session || !session.user) {
-    notFound();
-  }
-
-  const token = session.user.token;
-
-  let medico;
-  try {
-    const response = await fetchMedicoById(id, token);
-    medico = response.medico;
-  } catch (error) {
-    console.error("Error fetching medico:", error);
-    notFound();
-  }
-
-  if (!medico) {
-    notFound();
-  }
-
-  return (
-    <main className="p-4 md:p-6 lg:p-8">
-      <DetailMedico medico={medico} />
-    </main>
-  );
+const MedicoDetailPage = async ({ params }: MedicoDetailPageProps) => {
+  const medico = await fetchMedicoById(params.id);
+  return <Detail medico={medico} />;
 };
 
-export default MedicoDetailsPage;
+export default MedicoDetailPage;

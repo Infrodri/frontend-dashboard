@@ -1,53 +1,49 @@
-// app/dashboard/medicos/DeleteButton.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FaTrash } from "react-icons/fa";
-import { useState } from "react";
-import { auth } from "@/auth";
+import { deleteUser } from "@/app/helpers/apiusers";
 
-const DeleteButton: React.FC<{ medicoId: string }> = ({ medicoId }) => {
+interface DeleteButtonProps {
+  userId: string;
+  token: string;
+}
+
+const DeleteButton: React.FC<DeleteButtonProps> = ({ userId, token }) => {
   const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este médico?")) return;
+    if (!confirm(`¿Estás seguro de que quieres eliminar el usuario con ID ${userId}?`)) {
+      return;
+    }
 
-    setIsDeleting(true);
     try {
-      const session = await auth();
-      const token = session?.user?.token;
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/medicos/${medicoId}/soft`, {
+      // Usamos fetch directamente en el cliente, pasando el token
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al eliminar el médico.");
+        throw new Error(errorData.message || "Error al eliminar el usuario");
       }
 
-      // Refrescar la página después de eliminar
-      router.refresh();
+      router.refresh(); // Refresca la página para actualizar la lista
     } catch (error) {
-      console.error("Error al eliminar el médico:", error);
-      alert("No se pudo eliminar el médico. Por favor, intenta de nuevo.");
-    } finally {
-      setIsDeleting(false);
+      console.error("Error al eliminar usuario:", error);
+      alert("No se pudo eliminar el usuario. Por favor, intenta de nuevo.");
     }
   };
 
   return (
     <button
       onClick={handleDelete}
-      disabled={isDeleting}
-      className={`text-red-600 hover:text-red-800 ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
+      className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
     >
-      <FaTrash size={16} />
+      Eliminar
     </button>
   );
 };

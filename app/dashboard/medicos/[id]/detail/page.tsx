@@ -2,7 +2,7 @@
 import { fetchMedicoById } from "@/app/helpers/apimedicos";
 import { bebas } from "@/app/ui/fonts";
 import { notFound } from "next/navigation";
-import DetailMedico from "./DetailMedico";
+import DetailMedico from "./Detail";
 import { auth } from "@/auth";
 
 interface DetailMedicoPageProps {

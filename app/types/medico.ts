@@ -1,4 +1,6 @@
 // app/types/medico.ts
+
+
 export interface Especialidad {
     _id: string;
     nombre: string;
@@ -47,3 +49,30 @@ export interface Especialidad {
     createdAt: string;
     updatedAt: string;
   }
+  
+    
+  
+  
+  
+
+  // Nuevas interfaces para usuarios y especialidades
+
+  
+
+  interface Pagination {
+      totalPages: number;
+      currentPage: number;
+      totalItems: number;
+    }
+  interface EspecialidadesResponse {
+    success?: boolean;
+    especialidades?: Especialidad[];
+    data?: Especialidad[];
+    message?: string;
+  }
+  
+  interface FetchMedicosResponse {
+      medicos: Medico[];
+      pagination: Pagination;
+    }
+  

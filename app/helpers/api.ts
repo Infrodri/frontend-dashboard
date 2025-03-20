@@ -131,7 +131,7 @@ export const fetchCardData = async (): Promise<{
   const token = session?.user?.token;
 
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/dashboard/stats`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboard/stats`, {
       headers: authHeaders(token),
     });
 
@@ -180,7 +180,7 @@ export const fetchConsultasPorMes = async (year?: number, month?: number): Promi
 
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/dashboard/consultas-por-mes-especialidad?year=${defaultYear}&month=${defaultMonth}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboard/consultas-por-mes-especialidad?year=${defaultYear}&month=${defaultMonth}`,
       {
         headers: authHeaders(token),
       }
@@ -212,7 +212,7 @@ export const fetchMedicosList = async (): Promise<Invoice[]> => {
   const token = session?.user?.token;
 
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/dashboard/medicos`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboard/medicos`, {
       headers: authHeaders(token),
     });
 

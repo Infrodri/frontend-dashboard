@@ -10,19 +10,20 @@ const links = [
     href: "/dashboard",
     icon: FaHome
   },
-  {
-    name: "Invoices",
-    href: "/dashboard/invoices",
-    icon: FaFileInvoice
-  },
-  {
-    name: "Customers",
-    href: "/dashboard/customers",
-    icon: FaUsers
-  },
+
   {
     name: "Medicos",
     href: "/dashboard/medicos",
+    icon: FaUsers
+  },
+  {
+    name: "Usuarios",
+    href: "/dashboard/usuarios",
+    icon: FaUsers
+  },
+  {
+    name: "Pacientes",
+    href: "/dashboard/pacientes",
     icon: FaUsers
   }
 ];

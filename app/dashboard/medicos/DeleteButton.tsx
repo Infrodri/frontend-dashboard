@@ -2,11 +2,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
+import { deleteMedico } from "@/app/helpers/apimedicos";
 import { auth } from "@/auth";
 
-const DeleteButton: React.FC<{ medicoId: string }> = ({ medicoId }) => {
+const DeleteButton = ({ id }: { id: string }) => {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -17,25 +17,13 @@ const DeleteButton: React.FC<{ medicoId: string }> = ({ medicoId }) => {
     try {
       const session = await auth();
       const token = session?.user?.token;
+      if (!token) throw new Error("No autenticado");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/medicos/${medicoId}/soft`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al eliminar el médico.");
-      }
-
-      // Refrescar la página después de eliminar
+      await deleteMedico(id, token);
       router.refresh();
     } catch (error) {
-      console.error("Error al eliminar el médico:", error);
-      alert("No se pudo eliminar el médico. Por favor, intenta de nuevo.");
+      console.error("Error al eliminar médico:", error);
+      alert("No se pudo eliminar el médico.");
     } finally {
       setIsDeleting(false);
     }
@@ -44,10 +32,9 @@ const DeleteButton: React.FC<{ medicoId: string }> = ({ medicoId }) => {
   return (
     <button
       onClick={handleDelete}
-      disabled={isDeleting}
-      className={`text-red-600 hover:text-red-800 ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
+      className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
     >
-      <FaTrash size={16} />
+      Eliminar
     </button>
   );
 };

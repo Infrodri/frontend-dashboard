@@ -1,379 +1,230 @@
-// app/dashboard/medicos/[id]/EditMedicoForm.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Medico } from "@/app/types/medico";
+import { User, Role } from "@/app/types/UsersTypes";
+import { auth } from "@/auth";
+import { useParams } from "next/navigation";
 
-interface Usuario {
-  _id: string;
-  name: string;
-  email: string;
-  username?: string;
-  permissions?: string[];
-  roles: string[];
-  createdAt?: string;
-  updatedAt?: string;
+interface EditFormProps {
+  roles: Role[];
 }
 
-interface EditMedicoFormProps {
-  medico: Medico;
-  token: string;
-}
-
-const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
+const EditForm: React.FC<EditFormProps> = ({ roles }) => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    _id: medico._id,
-    cedula: medico.cedula,
-    primerNombre: medico.primerNombre,
-    segundoNombre: medico.segundoNombre || "",
-    primerApellido: medico.primerApellido,
-    segundoApellido: medico.segundoApellido || "",
-    fechaNacimiento: medico.fechaNacimiento || "",
-    lugarNacimiento: medico.lugarNacimiento || "",
-    nacionalidad: medico.nacionalidad || "",
-    ciudadDondeVive: medico.ciudadDondeVive || "",
-    direccion: medico.direccion || "",
-    telefono: medico.telefono || "",
-    celular: medico.celular || "",
-    genero: medico.genero || "",
-    especialidades: medico.especialidades.map((esp) => esp._id), // Solo necesitamos los _id
-    usuario: medico.usuario._id, // Inicializamos con el _id del usuario actual
-    estaActivo: medico.estaActivo,
+  const params = useParams();
+  const userId = params.id as string;
+  const [formData, setFormData] = useState<User>({
+    _id: userId,
+    name: "",
+    username: "",
+    email: "",
+    password: "", // Opcional para no cambiar si está vacío
+    permissions: [],
+    roles: [],
+    createdAt: "",
+    updatedAt: "",
   });
-  const [users, setUsers] = useState<Usuario[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch para obtener la lista de usuarios
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUser = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users`, {
+        const session = await auth();
+        if (!session?.user?.token) {
+          setError("No autenticado");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`http://localhost:4000/api/v1/users/${userId}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${session.user.token}`,
             "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          throw new Error("No se pudo cargar la lista de usuarios.");
+          throw new Error("Usuario no encontrado");
         }
 
         const data = await response.json();
-        setUsers(data.users || []);
+        setFormData(data); // Prefill con datos existentes
       } catch (err: any) {
-        setError(err.message || "Error al cargar los usuarios.");
+        setError(err.message || "Error al cargar el usuario");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUsers();
-  }, [token]);
+    fetchUser();
+  }, [userId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedRoleId = e.target.value;
+    const selectedRole = roles.find((role) => role._id === selectedRoleId);
+    setFormData((prev) => ({
+      ...prev,
+      roles: selectedRole ? [selectedRole.name] : [],
+      permissions: selectedRole ? selectedRole.permissions : [],
+    }));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "estaActivo" ? value === "true" : value, // Convertimos el valor de estaActivo a booleano
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.roles || formData.roles.length === 0) {
+      setError("Debe seleccionar un rol.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/medicos/${medico._id}`, {
+      const session = await auth();
+      if (!session?.user?.token) {
+        setError("No autenticado");
+        return;
+      }
+
+      const response = await fetch(`/api/users/${userId}/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          cedula: formData.cedula,
-          primerNombre: formData.primerNombre,
-          segundoNombre: formData.segundoNombre,
-          primerApellido: formData.primerApellido,
-          segundoApellido: formData.segundoApellido,
-          fechaNacimiento: formData.fechaNacimiento,
-          lugarNacimiento: formData.lugarNacimiento,
-          nacionalidad: formData.nacionalidad,
-          ciudadDondeVive: formData.ciudadDondeVive,
-          direccion: formData.direccion,
-          telefono: formData.telefono,
-          celular: formData.celular,
-          genero: formData.genero,
-          especialidades: formData.especialidades, // Ya es un array de _id
-          usuario: formData.usuario, // Enviamos el _id del usuario
-          estaActivo: formData.estaActivo,
+          name: formData.name,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password || undefined, // Solo enviar si se modifica
+          permissions: formData.permissions,
+          roles: formData.roles,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar el médico.");
+        throw new Error(errorData.error || "Error al actualizar el usuario");
       }
 
-      const result = await response.json();
-      setSuccessMessage(result.message || "Médico actualizado con éxito");
+      setSuccessMessage("Usuario actualizado con éxito");
       setTimeout(() => {
-        router.push("/dashboard/medicos");
+        router.push(`/dashboard/usuarios/${userId}/detail`);
         router.refresh();
       }, 1000);
-    } catch (error: any) {
-      setError(error.message || "No se pudo actualizar el médico.");
+    } catch (err: any) {
+      setError(err.message || "No se pudo actualizar el usuario");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="cedula" className="block text-sm font-medium text-gray-700">
-          Cédula
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          Nombre
         </label>
         <input
           type="text"
-          id="cedula"
-          name="cedula"
-          value={formData.cedula}
+          id="name"
+          name="name"
+          value={formData.name}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
       <div>
-        <label htmlFor="primerNombre" className="block text-sm font-medium text-gray-700">
-          Primer Nombre
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+          Nombre de usuario
         </label>
         <input
           type="text"
-          id="primerNombre"
-          name="primerNombre"
-          value={formData.primerNombre}
+          id="username"
+          name="username"
+          value={formData.username}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
       <div>
-        <label htmlFor="segundoNombre" className="block text-sm font-medium text-gray-700">
-          Segundo Nombre
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Correo electrónico
         </label>
         <input
-          type="text"
-          id="segundoNombre"
-          name="segundoNombre"
-          value={formData.segundoNombre}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="primerApellido" className="block text-sm font-medium text-gray-700">
-          Primer Apellido
-        </label>
-        <input
-          type="text"
-          id="primerApellido"
-          name="primerApellido"
-          value={formData.primerApellido}
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
       <div>
-        <label htmlFor="segundoApellido" className="block text-sm font-medium text-gray-700">
-          Segundo Apellido
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          Contraseña (dejar en blanco para no cambiar)
         </label>
         <input
-          type="text"
-          id="segundoApellido"
-          name="segundoApellido"
-          value={formData.segundoApellido}
+          type="password"
+          id="password"
+          name="password"
+          value={formData.password}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <div>
-        <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700">
-          Fecha de Nacimiento
-        </label>
-        <input
-          type="date"
-          id="fechaNacimiento"
-          name="fechaNacimiento"
-          value={formData.fechaNacimiento}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="lugarNacimiento" className="block text-sm font-medium text-gray-700">
-          Lugar de Nacimiento
-        </label>
-        <input
-          type="text"
-          id="lugarNacimiento"
-          name="lugarNacimiento"
-          value={formData.lugarNacimiento}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="nacionalidad" className="block text-sm font-medium text-gray-700">
-          Nacionalidad
-        </label>
-        <input
-          type="text"
-          id="nacionalidad"
-          name="nacionalidad"
-          value={formData.nacionalidad}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="ciudadDondeVive" className="block text-sm font-medium text-gray-700">
-          Ciudad donde vive
-        </label>
-        <input
-          type="text"
-          id="ciudadDondeVive"
-          name="ciudadDondeVive"
-          value={formData.ciudadDondeVive}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">
-          Dirección
-        </label>
-        <input
-          type="text"
-          id="direccion"
-          name="direccion"
-          value={formData.direccion}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
-          Teléfono
-        </label>
-        <input
-          type="text"
-          id="telefono"
-          name="telefono"
-          value={formData.telefono}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="celular" className="block text-sm font-medium text-gray-700">
-          Celular
-        </label>
-        <input
-          type="text"
-          id="celular"
-          name="celular"
-          value={formData.celular}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="genero" className="block text-sm font-medium text-gray-700">
-          Género
+        <label htmlFor="roles" className="block text-sm font-medium text-gray-700">
+          Roles
         </label>
         <select
-          id="genero"
-          name="genero"
-          value={formData.genero}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Seleccione género</option>
-          <option value="Masculino">Masculino</option>
-          <option value="Femenino">Femenino</option>
-          <option value="Otro">Otro</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="usuario" className="block text-sm font-medium text-gray-700">
-          Usuario
-        </label>
-        <select
-          id="usuario"
-          name="usuario"
-          value={formData.usuario}
-          onChange={handleChange}
+          id="roles"
+          name="roles"
+          value={formData.roles[0] || ""}
+          onChange={handleRoleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           required
         >
-          <option value="">Seleccione un usuario</option>
-          {users && users.length > 0 ? (
-            users.map((user) => (
-              <option key={user._id} value={user._id}>
-                {user.username}
-              </option>
-            ))
-          ) : (
-            <option value="" disabled>
-              No hay usuarios disponibles
-            </option>
-          )}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="estaActivo" className="block text-sm font-medium text-gray-700">
-          Estado Activo
-        </label>
-        <select
-          id="estaActivo"
-          name="estaActivo"
-          value={formData.estaActivo ? "true" : "false"}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="true">Activo</option>
-          <option value="false">Inactivo</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="especialidades" className="block text-sm font-medium text-gray-700">
-          Especialidades
-        </label>
-        <select
-          id="especialidades"
-          name="especialidades"
-          value={formData.especialidades[0] || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setFormData((prev) => ({
-              ...prev,
-              especialidades: value ? [value] : [], // Solo permitimos una especialidad por ahora
-            }));
-          }}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Seleccione una especialidad</option>
-          {medico.especialidades.map((esp) => (
-            <option key={esp._id} value={esp._id}>
-              {esp.nombre}
+          <option value="">Seleccione un rol</option>
+          {roles.map((role) => (
+            <option key={role._id} value={role._id}>
+              {role.name}
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Permisos asociados al rol
+        </label>
+        {formData.permissions.length > 0 ? (
+          <ul className="mt-1 list-disc pl-5 text-gray-600">
+            {formData.permissions.map((permission, index) => (
+              <li key={index}>{permission}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 text-gray-600">No hay permisos asociados a este rol.</p>
+        )}
       </div>
       {error && <p className="text-red-500">{error}</p>}
       {successMessage && <p className="text-green-500">{successMessage}</p>}
@@ -385,11 +236,11 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
             isSubmitting ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {isSubmitting ? "Guardando..." : "Guardar"}
+          {isSubmitting ? "Actualizando..." : "Actualizar"}
         </button>
         <button
           type="button"
-          onClick={() => router.push("/dashboard/medicos")}
+          onClick={() => router.push(`/dashboard/usuarios/${userId}/detail`)}
           className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
         >
           Cancelar
@@ -399,4 +250,4 @@ const EditMedicoForm: React.FC<EditMedicoFormProps> = ({ medico, token }) => {
   );
 };
 
-export default EditMedicoForm;
+export default EditForm;

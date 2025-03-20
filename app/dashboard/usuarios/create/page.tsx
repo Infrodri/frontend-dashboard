@@ -1,45 +1,28 @@
-// app/dashboard/medicos/create/page.tsx
+// app/dashboard/usuarios/create/page.tsx
 import { bebas } from "@/app/ui/fonts";
-import { Breadcrumbs } from "anjrot-components";
-import CreateMedicoForm from "./CreateForm";
+import CreateForm from "./CreateForm";
 import { auth } from "@/auth";
-import { fetchEspecialidades, fetchUsers } from "@/app/helpers/apimedicos";
-import { Especialidad, Usuario } from "@/app/types/medico";
+import { fetchRoles } from "@/app/helpers/apiusers";
+import { Role } from "@/app/types/UsersTypes";
+import { Session } from "next-auth";
 
-const breadCrumbs = [
-  { label: "Médicos", href: "/dashboard/medicos" },
-  { label: "Crear Médico", href: "/dashboard/medicos/create", active: true },
-];
-
-const CreateMedicoPage = async () => {
+export default async function CreatePage() {
   const session = await auth();
-  let users: Usuario[] = [];
-  let especialidades: Especialidad[] = [];
-
-  try {
-    users = await fetchUsers();
-    especialidades = await fetchEspecialidades();
-  } catch (error) {
-    console.error("Error loading data for CreateMedicoPage:", error);
+  if (!session?.user?.token) {
+    throw new Error("No autenticado");
   }
 
-  console.log("CreateMedicoPage users:>> ", users);
-  console.log("CreateMedicoPage especialidades:>> ", especialidades);
+  const roles = await fetchRoles();
+  console.log("Roles obtenidos en CreatePage:", JSON.stringify(roles, null, 2)); // Depuración detallada
 
   return (
-    <main>
-      <Breadcrumbs breadcrumb={breadCrumbs} className={bebas.className} />
-      <div className="p-4">
-        {(!users || users.length === 0) && (
-          <p className="text-red-500 mb-4">No se encontraron usuarios disponibles. Por favor, crea un usuario primero.</p>
-        )}
-        {(!especialidades || especialidades.length === 0) && (
-          <p className="text-red-500 mb-4">No se encontraron especialidades disponibles. Por favor, crea una especialidad primero.</p>
-        )}
-        <CreateMedicoForm session={session} users={users} especialidades={especialidades} />
+    <main className="p-4 md:p-6 lg:p-8">
+      <h1 className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-6`}>
+        Crear Usuario
+      </h1>
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+        <CreateForm session={session} roles={roles} />
       </div>
     </main>
   );
-};
-
-export default CreateMedicoPage;
+}

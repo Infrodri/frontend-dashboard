@@ -1,54 +1,59 @@
-// app/components/Pagination.tsx
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 interface PaginationProps {
   totalPages: number;
+  basePath: string; // Nueva prop para la URL base
 }
 
-const Pagination: React.FC<PaginationProps> = ({ totalPages }) => {
+const Pagination: React.FC<PaginationProps> = ({ totalPages, basePath }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const currentPage = Number(searchParams.get("page")) || 1;
+  const query = searchParams.get("query") || "";
 
-  const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page.toString());
-    router.push(`?${params.toString()}`);
+  const createPageURL = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString()); // Preservar todos los parámetros actuales
+    params.set("page", page.toString()); // Actualizar el parámetro page
+
+    // Construir la URL con la basePath proporcionada
+    const url = `${basePath}?${params.toString()}`;
+    console.log(`URL generada para página ${page}:`, url); // Log para depurar
+    return url;
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      <button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
-      >
-        <FaChevronLeft />
-      </button>
-      {[...Array(totalPages)].map((_, index) => {
-        const page = index + 1;
-        return (
-          <button
-            key={page}
-            onClick={() => handlePageChange(page)}
-            className={`px-3 py-1 border border-gray-300 rounded-lg ${
-              currentPage === page ? "bg-blue-500 text-white" : "bg-white text-gray-700"
-            }`}
-          >
-            {page}
-          </button>
-        );
-      })}
-      <button
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
-      >
-        <FaChevronRight />
-      </button>
+    <div className="flex space-x-2">
+      {currentPage > 1 && (
+        <Link
+          href={createPageURL(currentPage - 1)}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+        >
+          Anterior
+        </Link>
+      )}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <Link
+          key={page}
+          href={createPageURL(page)}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === page
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          {page}
+        </Link>
+      ))}
+      {currentPage < totalPages && (
+        <Link
+          href={createPageURL(currentPage + 1)}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+        >
+          Siguiente
+        </Link>
+      )}
     </div>
   );
 };

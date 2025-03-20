@@ -23,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { email, password } = parseCredentials.data;
 
         try {
-          const login = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
+          const login = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
             headers: {
               "Content-Type": "application/json"
             },

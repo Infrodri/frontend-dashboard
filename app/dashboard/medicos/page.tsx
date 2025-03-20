@@ -1,30 +1,24 @@
-// app/dashboard/medicos/page.tsx
 import { Suspense } from "react";
 import SearchBar from "@/app/components/SearchBar";
 import Pagination from "@/app/components/Pagination";
 import { bebas } from "@/app/ui/fonts";
 import MedicosTable from "@/app/components/MedicosTable";
-import { fetchFilteredMedicos } from "@/app/helpers/apimedicos";
+import { fetchMedicos } from "@/app/helpers/apimedicos";
 import Link from "next/link";
 
 interface MedicosPageProps {
-  searchParams?: {
-    query?: string;
-    page?: string;
-  };
+  searchParams: Promise<{ query?: string; page?: string }>;
 }
 
 const MedicosPage = async ({ searchParams }: MedicosPageProps) => {
-  const query = searchParams?.query || "";
-  const currentPage = Number(searchParams?.page) || 1;
+  const { query = "", page = "1" } = await searchParams;
+  const currentPage = Number(page) || 1;
   const ITEMS_PER_PAGE = 5;
 
-  // Obtener médicos paginados y filtrados
-  const { medicos, pagination } = await fetchFilteredMedicos(currentPage, ITEMS_PER_PAGE, query);
+  const { medicos, pagination } = await fetchMedicos(currentPage, ITEMS_PER_PAGE, query);
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
-      {/* Título y botón para crear médico */}
       <div className="flex justify-between items-center mb-6">
         <h1
           className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900`}
@@ -39,12 +33,10 @@ const MedicosPage = async ({ searchParams }: MedicosPageProps) => {
         </Link>
       </div>
 
-      {/* Campo de búsqueda */}
       <div className="mb-6">
         <SearchBar placeholder="Buscar médicos..." />
       </div>
 
-      {/* Tabla de médicos */}
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
         <Suspense fallback={<div className="text-gray-500">Cargando médicos...</div>}>
           {medicos.length > 0 ? (
@@ -55,10 +47,9 @@ const MedicosPage = async ({ searchParams }: MedicosPageProps) => {
         </Suspense>
       </div>
 
-      {/* Paginación */}
       {pagination.totalPages > 1 && (
         <div className="mt-6 flex justify-center">
-          <Pagination totalPages={pagination.totalPages} />
+          <Pagination totalPages={pagination.totalPages} basePath="/dashboard/medicos" />
         </div>
       )}
     </main>

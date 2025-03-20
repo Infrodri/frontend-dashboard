@@ -1,39 +1,40 @@
-// app/dashboard/medicos/[id]/detail/page.tsx
-import { fetchMedicoById } from "@/app/helpers/apimedicos";
+import { fetchUserById } from "@/app/helpers/apiusers";
 import { bebas } from "@/app/ui/fonts";
 import { notFound } from "next/navigation";
-import DetailMedico from "./Detail";
+import Detail from "./Detail";
 import { auth } from "@/auth";
 
-interface DetailMedicoPageProps {
-  params: Promise<{ id: string }>; // Cambiamos params a Promise para cumplir con las expectativas de Next.js
+interface DetailPageProps {
+  params: Promise<{ id: string }>;
 }
 
-const DetailMedicoPage = async ({ params }: DetailMedicoPageProps) => {
-  const resolvedParams = await params; // Aseguramos que params esté resuelto
-  const id = resolvedParams.id; // Ahora podemos usar id de manera segura
+const DetailPage = async ({ params }: DetailPageProps) => {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
 
   const session = await auth();
   if (!session?.user?.token) {
     throw new Error("No autenticado");
   }
 
-  let medico;
+  let user;
   try {
-    medico = await fetchMedicoById(id);
+    user = await fetchUserById(id);
   } catch (error) {
-    console.error("Error loading medico data:", error);
+    console.error("Error loading user data:", error);
     notFound();
   }
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
       <h1 className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-6`}>
-        Detalles del Médico
+        Detalles del Usuario
       </h1>
-      <DetailMedico medico={medico} />
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+        <Detail user={user} />
+      </div>
     </main>
   );
 };
 
-export default DetailMedicoPage;
+export default DetailPage;

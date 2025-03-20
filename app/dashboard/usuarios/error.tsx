@@ -1,25 +1,16 @@
-"use client";
+"use client"
+import { bebas } from "@/app/ui/fonts";
 
-import { useEffect } from "react";
-
-export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => {
-    // Optionally log the error to an error reporting service
-    console.error(error);
-  }, [error]);
-
+export default function Error() {
   return (
-    <main className="flex h-full flex-col items-center justify-center">
-      <h2 className="text-center">Something went wrong!</h2>
-      <button
-        className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-400"
-        onClick={
-          // Attempt to recover by trying to re-render the invoices route
-          () => reset()
-        }
-      >
-        Try again
-      </button>
-    </main>
+    <div className="p-4 md:p-6 lg:p-8 text-center">
+      <h1 className={`${bebas.className} text-2xl font-bold text-gray-900 mb-4`}>
+        Error
+      </h1>
+      <p className="text-gray-600">Ocurrió un error al procesar la solicitud. Por favor, intenta de nuevo más tarde.</p>
+      <a href="/dashboard/usuarios" className="mt-4 inline-block text-blue-600 hover:underline">
+        Volver a Usuarios
+      </a>
+    </div>
   );
 }
