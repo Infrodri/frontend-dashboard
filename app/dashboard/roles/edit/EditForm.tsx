@@ -7,10 +7,9 @@ import { updateRole } from "@/app/helpers/apiroles";
 
 interface EditFormProps {
   role: { _id: string; name: string; permissions: string[] };
-  token: string;
 }
 
-export default function EditForm({ role, token }: EditFormProps) {
+export default function EditForm({ role }: EditFormProps) {
   const router = useRouter();
   const [name, setName] = useState(role.name);
   const [permissions, setPermissions] = useState(role.permissions.join(", "));
@@ -24,7 +23,7 @@ export default function EditForm({ role, token }: EditFormProps) {
 
     try {
       const permissionsArray = permissions.split(",").map((perm) => perm.trim());
-      await updateRole(role._id, { name, permissions: permissionsArray }, token);
+      await updateRole(role._id, { name, permissions: permissionsArray }); // No pasamos token
       router.push(`/dashboard/roles/details/${role._id}`);
     } catch (err: any) {
       setError(err.message || "No se pudo actualizar el rol.");

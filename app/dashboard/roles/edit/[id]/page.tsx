@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { fetchRoleById } from "@/app/helpers/apiroles";
-import EditForm from "./EditForm";
+import EditForm from "@/app/dashboard/roles/edit/EditForm";
 
 interface EditRolePageProps {
   params: Promise<{ id: string }>;
@@ -15,13 +15,9 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
     redirect("/login");
   }
 
-  if (!session.user.token) {
-    redirect("/login");
-  }
-
   let role = null;
   try {
-    role = await fetchRoleById(resolvedParams.id, session.user.token);
+    role = await fetchRoleById(resolvedParams.id); // No pasamos token
   } catch (error: any) {
     console.error("Error al obtener el rol:", error.message);
     return (
@@ -46,7 +42,7 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Editar Rol</h1>
-      <EditForm role={role} token={session.user.token} />
+      <EditForm role={role} /> {/* No pasamos token */}
     </div>
   );
 }

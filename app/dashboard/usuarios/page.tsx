@@ -1,3 +1,4 @@
+// app/dashboard/usuarios/page.tsx
 import { Suspense } from "react";
 import SearchBar from "@/app/components/SearchBar";
 import Pagination from "@/app/components/Pagination";
@@ -7,6 +8,14 @@ import { fetchUsers } from "@/app/helpers/apiusers";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { User } from "@/app/types/UsersTypes";
+
+// Definir el tipo de paginación (debería coincidir con el definido en apiusers.ts)
+interface Pagination {
+  totalPages: number;
+  currentPage: number;
+  totalItems: number;
+}
 
 interface UsuariosPageProps {
   searchParams: Promise<{ query?: string; page?: string }>;
@@ -24,8 +33,9 @@ const UsuariosPage = async ({ searchParams }: UsuariosPageProps) => {
   const currentPage = Number(page) || 1;
   const ITEMS_PER_PAGE = 5;
 
-  let users = [];
-  let pagination = { totalPages: 1, currentPage: 1, totalItems: 0 };
+  // Definir users y pagination con tipos explícitos
+  let users: User[] = [];
+  let pagination: Pagination = { totalPages: 1, currentPage: 1, totalItems: 0 };
   let errorMessage: string | null = null;
 
   try {

@@ -1,133 +1,89 @@
 // app/dashboard/roles/page.tsx
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { Suspense } from "react";
+import SearchBar from "@/app/components/SearchBar";
+import Pagination from "@/app/components/Pagination";
+import { bebas } from "@/app/ui/fonts";
+import RolesTable from "./RolesTable";
+import { fetchRoles } from "@/app/helpers/apiroles";
 import Link from "next/link";
-import { fetchRoles, createRole } from "@/app/helpers/apiroles";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import { Role } from "@/app/types/RolesTypes";
 
-export default async function RolesPage({ searchParams }: { searchParams: { error?: string } }) {
+// Definir el tipo de paginación (debería coincidir con el definido en apiroles.ts)
+interface Pagination {
+  totalPages: number;
+  currentPage: number;
+  totalItems: number;
+}
+
+interface RolesPageProps {
+  searchParams: Promise<{ query?: string; page?: string }>;
+}
+
+const RolesPage = async ({ searchParams }: RolesPageProps) => {
   const session = await auth();
   if (!session?.user) {
+    console.log("No autenticado, redirigiendo a /login");
     redirect("/login");
   }
 
-  if (!session.user.token) {
-    redirect("/login");
-  }
+  const { query = "", page = "1" } = await searchParams;
+  const currentPage = Number(page) || 1;
+  const ITEMS_PER_PAGE = 5;
 
+  // Definir roles y pagination con tipos explícitos
   let roles: Role[] = [];
+  let pagination: Pagination = { totalPages: 1, currentPage: 1, totalItems: 0 };
+  let errorMessage: string | null = null;
+
   try {
-    roles = await fetchRoles(session.user.token);
-  } catch (error: any) {
-    console.error("Error al obtener roles:", error.message);
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Error</h1>
-        <p className="text-red-500">
-          Error al cargar los roles: {error.message}. Por favor, intenta de nuevo.
-        </p>
-      </div>
-    );
+    const response = await fetchRoles(currentPage, ITEMS_PER_PAGE, query);
+    roles = response.roles;
+    pagination = response.pagination || { totalPages: 1, currentPage: 1, totalItems: 0 };
+    console.log("Roles recibidos en RolesPage:", JSON.stringify(roles, null, 2));
+    console.log("Paginación recibida en RolesPage:", JSON.stringify(pagination, null, 2));
+  } catch (error) {
+    console.error("Error al cargar roles:", error);
+    errorMessage = "No se pudieron cargar los roles. Por favor, intenta de nuevo más tarde.";
   }
-
-  const handleCreateRole = async (formData: FormData) => {
-    "use server";
-    const name = formData.get("name") as string;
-    const permissions = (formData.get("permissions") as string).split(",").map((perm) => perm.trim());
-
-    try {
-      await createRole({ name, permissions }, session.user.token);
-      redirect("/dashboard/roles");
-    } catch (error: any) {
-      console.error("Error al crear el rol:", error.message);
-      redirect(`/dashboard/roles?error=${encodeURIComponent(error.message || "No se pudo crear el rol.")}`);
-    }
-  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Roles</h1>
-
-      {/* Mostrar mensaje de error si existe */}
-      {searchParams.error && (
-        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
-          <p>Error: {searchParams.error}</p>
-        </div>
-      )}
-
-      {/* Formulario para crear un nuevo rol */}
-      <div className="mb-6 bg-white shadow rounded-lg p-4">
-        <h2 className="text-xl font-semibold mb-2">Crear Nuevo Rol</h2>
-        <form action={handleCreateRole} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium">
-              Nombre del Rol
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              className="mt-1 block w-full p-2 border rounded"
-              placeholder="Ej: admin"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="permissions" className="block text-sm font-medium">
-              Permisos (separados por comas)
-            </label>
-            <input
-              id="permissions"
-              name="permissions"
-              type="text"
-              className="mt-1 block w-full p-2 border rounded"
-              placeholder="Ej: admin_granted, posts_read"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            aria-label="Crear rol"
-          >
-            Crear Rol
-          </button>
-        </form>
+    <main className="p-4 md:p-6 lg:p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className={`${bebas.className} text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900`}>
+          Roles
+        </h1>
+        <Link
+          href="/dashboard/roles/create"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Crear Rol
+        </Link>
       </div>
-
-      {/* Lista de roles */}
-      {roles.length === 0 ? (
-        <p className="text-gray-500">No hay roles registrados.</p>
-      ) : (
-        <div className="grid gap-4">
-          {roles.map((role) => (
-            <div key={role._id} className="bg-white shadow rounded-lg p-4">
-              <h2 className="text-lg font-semibold">{role.name}</h2>
-              <p>
-                <strong>Permisos:</strong> {role.permissions.join(", ")}
-              </p>
-              <p>
-                <strong>Creado:</strong>{" "}
-                {role.createdAt ? new Date(role.createdAt).toLocaleDateString() : "No especificado"}
-              </p>
-              <div className="mt-2 space-x-2">
-                <Link
-                  href={`/dashboard/roles/details/${role._id}`}
-                  className="text-blue-500 hover:underline"
-                >
-                  Ver Detalles
-                </Link>
-                <Link
-                  href={`/dashboard/roles/edit/${role._id}`}
-                  className="text-blue-500 hover:underline"
-                >
-                  Editar
-                </Link>
-              </div>
-            </div>
-          ))}
+      <div className="mb-6">
+        <SearchBar placeholder="Buscar roles..." />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        {errorMessage ? (
+          <p className="text-red-500 text-center">{errorMessage}</p>
+        ) : (
+          <Suspense fallback={<div className="text-gray-500">Cargando roles...</div>}>
+            {roles.length > 0 ? (
+              <RolesTable roles={roles} />
+            ) : (
+              <p className="text-gray-500 text-center">No se encontraron roles.</p>
+            )}
+          </Suspense>
+        )}
+      </div>
+      {pagination.totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination totalPages={pagination.totalPages} basePath="/dashboard/roles" />
         </div>
       )}
-    </div>
+    </main>
   );
-}
+};
+
+export default RolesPage;

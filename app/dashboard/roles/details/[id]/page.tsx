@@ -2,8 +2,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import Link from "next/link";
-import { fetchRoleById, deleteRole } from "@/app/helpers/apiroles";
+import { fetchRoleById } from "@/app/helpers/apiroles";
 import { Role } from "@/app/types/RolesTypes";
+import DeleteButton from "@/app/dashboard/roles/details/DeleteButton";
 
 interface RoleDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -16,13 +17,9 @@ export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) 
     redirect("/login");
   }
 
-  if (!session.user.token) {
-    redirect("/login");
-  }
-
   let role: Role | null = null;
   try {
-    role = await fetchRoleById(resolvedParams.id, session.user.token);
+    role = await fetchRoleById(resolvedParams.id);
   } catch (error: any) {
     console.error("Error al obtener el rol:", error.message);
     let errorMessage = "Error al cargar el rol. Por favor, intenta de nuevo.";
@@ -56,17 +53,6 @@ export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) 
       </div>
     );
   }
-
-  const handleDeleteRole = async () => {
-    "use server";
-    try {
-      await deleteRole(resolvedParams.id, session.user.token);
-      redirect("/dashboard/roles");
-    } catch (error: any) {
-      console.error("Error al eliminar el rol:", error.message);
-      redirect(`/dashboard/roles?error=${encodeURIComponent(error.message || "No se pudo eliminar el rol.")}`);
-    }
-  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -102,19 +88,7 @@ export default async function RoleDetailsPage({ params }: RoleDetailsPageProps) 
         >
           Editar Rol
         </Link>
-        <form action={handleDeleteRole}>
-          <button
-            type="submit"
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            onClick={(e) => {
-              if (!confirm("¿Estás seguro de que deseas eliminar este rol?")) {
-                e.preventDefault();
-              }
-            }}
-          >
-            Eliminar Rol
-          </button>
-        </form>
+        <DeleteButton roleId={role._id} />
       </div>
     </div>
   );
