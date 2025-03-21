@@ -16,7 +16,7 @@ interface FormData {
   email: string;
   password: string;
   permissions: string[];
-  roles: string[]; // Array de nombres de roles
+  roles: string[];
 }
 
 const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
@@ -32,18 +32,27 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRoleName, setSelectedRoleName] = useState<string>("");
 
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  console.log("Roles recibidos en CreateForm:", JSON.stringify(roles, null, 2));
+  console.log("Sesión en CreateForm:", JSON.stringify(session, null, 2));
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const roleId = e.target.value;
-    console.log("Selected Role ID:", roleId);
-    setSelectedRoleId(roleId);
-    const selectedRole = roles.find((role) => role._id === roleId);
-    console.log("Selected Role:", selectedRole);
+    const roleName = e.target.value;
+    console.log("Selected Role Name:", roleName);
+    setSelectedRoleName(roleName);
+
+    const selectedRole = roles.find((role) => role.name === roleName);
+    if (!selectedRole && roleName) {
+      console.warn("Rol no encontrado en la lista de roles:", roleName);
+      setError("El rol seleccionado no es válido.");
+      return;
+    }
+
+    console.log("Selected Role:", JSON.stringify(selectedRole, null, 2));
     setFormData((prev) => ({
       ...prev,
-      roles: selectedRole ? [roleId] : [],
+      roles: roleName ? [roleName] : [], // Asegurarse de enviar el nombre del rol
       permissions: selectedRole ? selectedRole.permissions : [],
     }));
   };
@@ -59,13 +68,17 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!session || !session.user || !session.user.token) {
-      setError("No autenticado");
+    const token = session?.user?.token || session?.token || session?.accessToken;
+    if (!session || !token) {
+      setError("No autenticado. Por favor, inicia sesión nuevamente.");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
       return;
     }
 
     if (!formData.roles || formData.roles.length === 0) {
-      setError("Debe seleccionar un rol.");
+      setError("Debe seleccionar al menos un rol.");
       return;
     }
 
@@ -79,7 +92,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
       email: formData.email,
       password: formData.password,
       permissions: formData.permissions,
-      roles: formData.roles,
+      roles: formData.roles, // Enviar nombres de roles
     };
 
     try {
@@ -88,12 +101,20 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.error.includes("Sesión inválida")) {
+          setError(errorData.error);
+          setTimeout(() => {
+            router.push("/login");
+          }, 2000);
+          return;
+        }
         throw new Error(errorData.error || "Error al crear el usuario");
       }
 
@@ -104,7 +125,8 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
         router.refresh();
       }, 1000);
     } catch (error: any) {
-      console.error("Error en handleSubmit:", error.message);
+      console.error("Error en handleSubmit:", error);
+      console.error("Mensaje de error:", error.message);
       setError(error.message || "No se pudo crear el usuario.");
     } finally {
       setIsSubmitting(false);
@@ -170,25 +192,25 @@ const CreateForm: React.FC<CreateFormProps> = ({ session, roles }) => {
         />
       </div>
       <div>
-    <label htmlFor="roles" className="block text-sm font-medium text-gray-700">
-      Roles
-    </label>
-    <select
-      id="roles"
-      name="roles"
-      value={selectedRoleId} // Usamos el estado separado para el _id
-      onChange={handleRoleChange}
-      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      required
-    >
-      <option value="">Seleccione un rol</option>
-      {roles.map((role) => (
-        <option key={role._id} value={role._id}>
-          {role.name}
-        </option>
-      ))}
-    </select>
-  </div>
+        <label htmlFor="roles" className="block text-sm font-medium text-gray-700">
+          Roles
+        </label>
+        <select
+          id="roles"
+          name="roles"
+          value={selectedRoleName}
+          onChange={handleRoleChange}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          required
+        >
+          <option value="">Seleccione un rol</option>
+          {roles.map((role) => (
+            <option key={role.name} value={role.name}>
+              {role.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700">
           Permisos asociados al rol

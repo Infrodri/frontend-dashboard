@@ -47,10 +47,9 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
-export const fetchRoles = async (): Promise<Role[]> => {
+export const fetchRoles = async (token: string): Promise<Role[]> => {
   try {
     const token = await getAuthToken();
-    console.log("Token para fetchRoles:", token);
     const url = `${BACKEND_URL}/roles`;
     console.log("URL de fetchRoles:", url);
     const response = await fetch(url, { headers: authHeaders(token) });
@@ -72,8 +71,9 @@ export const fetchRoles = async (): Promise<Role[]> => {
     }
 
     const data = await response.json();
-    console.log("Datos de fetchRoles:", JSON.stringify(data, null, 2));
+    console.log("Datos de fetchRoles (antes de procesar):", JSON.stringify(data, null, 2));
     const roles = Array.isArray(data) ? data : data.roles || [];
+    console.log("Roles procesados:", JSON.stringify(roles, null, 2));
     if (!roles.length) {
       throw new Error("No se encontraron roles disponibles en el backend.");
     }
@@ -117,13 +117,19 @@ export const createUser = async (userData: Partial<User>, token: string): Promis
   try {
     const url = `${BACKEND_URL}/users`;
     console.log("URL de la solicitud (createUser):", url);
-    console.log("Encabezados de la solicitud:", authHeaders(token));
+    console.log("Encabezados de la solicitud:", {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    });
     console.log("Datos enviados (createUser):", JSON.stringify(userData, null, 2));
     console.log("Método de la solicitud:", "POST");
 
     const response = await fetch(url, {
       method: "POST",
-      headers: authHeaders(token),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(userData),
     });
 
@@ -138,6 +144,11 @@ export const createUser = async (userData: Partial<User>, token: string): Promis
         throw new Error(`Error ${response.status}: ${response.statusText} - Respuesta no es JSON: ${responseText.slice(0, 200)}`);
       }
       console.error("Error del backend (createUser):", JSON.stringify(errorData, null, 2));
+
+      if (errorData.message === "Invalid token" || errorData.error === "jwt malformed") {
+        throw new Error("Sesión inválida: el token no es válido. Por favor, inicia sesión nuevamente.");
+      }
+
       throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
     }
 

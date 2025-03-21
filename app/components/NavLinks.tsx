@@ -10,20 +10,31 @@ const links = [
     href: "/dashboard",
     icon: FaHome
   },
-
-  {
-    name: "Medicos",
-    href: "/dashboard/medicos",
-    icon: FaUsers
-  },
   {
     name: "Usuarios",
     href: "/dashboard/usuarios",
     icon: FaUsers
   },
   {
+    name: "Roles",
+    href: "/dashboard/roles",
+    icon: FaUsers
+  },
+
+  {
+    name: "Medicos",
+    href: "/dashboard/medicos",
+    icon: FaUsers
+  },
+
+  {
     name: "Pacientes",
     href: "/dashboard/pacientes",
+    icon: FaUsers
+  },
+  {
+    name: "Fichas Medicas",
+    href: "/dashboard/fichas-medicas",
     icon: FaUsers
   }
 ];

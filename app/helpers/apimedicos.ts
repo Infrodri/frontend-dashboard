@@ -51,7 +51,6 @@ export const fetchEspecialidades = async (): Promise<Especialidad[]> => {
     const token = await getAuthToken();
     const url = `${BACKEND_URL}/especialidades`;
     console.log("URL de la solicitud (fetchEspecialidades):", url);
-    console.log("Encabezados de la solicitud:", authHeaders(token));
     const response = await fetch(url, { headers: authHeaders(token) });
     const result = await handleResponse(response);
     console.log("Respuesta del backend (fetchEspecialidades):", JSON.stringify(result, null, 2));
